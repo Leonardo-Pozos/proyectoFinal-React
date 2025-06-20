@@ -3,7 +3,7 @@ import { FlatList, StyleSheet, Text, View, Image, ActivityIndicator, SafeAreaVie
 import {collection, getDocs, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
 import {useNavigation, useIsFocused} from '@react-navigation/native';
 import {Ionicons} from '@expo/vector-icons';
-import { db } from "../db/firebase";
+import { db, auth } from "../db/firebase";
 import CardProducts from "../components/CardProducts";
 
 export default function MyProductsScreen({ navigation }){
@@ -20,12 +20,22 @@ export default function MyProductsScreen({ navigation }){
     const cargarProducto = async () => {
         setLoading(true);
         try {
+            const currentUID = auth.currentUser?.uid;
+
+            if (!currentUID) {
+                console.warn('Usuario no autenticado.');
+                setProductos([]);
+                setLoading(false);
+                return;
+            }
+
             const q = query(collection(db, 'db-productos'), orderBy('title'));
             const snapshot = await getDocs(q);
-            const producto = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-            }));
+
+            const producto = snapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .filter(item => item.userId === currentUID);
+
             setProductos(producto);
         } catch (error) {
             console.error('Error cargando sus productos:', error);
@@ -33,6 +43,7 @@ export default function MyProductsScreen({ navigation }){
             setLoading(false);
         }
     };
+
 
     const eliminarProducto = async (id) => {
         try {
@@ -81,6 +92,7 @@ const styles = StyleSheet.create({
 container: {
         flex: 1,
         padding: 16,
+        backgroundColor: '#E6E6D1'
     },
     loading: {
         flex: 1,
