@@ -1,16 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-    KeyboardAvoidingView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    Image,
-    Platform,
-    ScrollView,
-    Keyboard
-} from "react-native";
+import { KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, Platform, ScrollView, Keyboard} from "react-native";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../db/firebase";
 
