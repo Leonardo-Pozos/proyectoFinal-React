@@ -22,7 +22,7 @@ export default function ProductListingScreen({ navigation }) {
                     getLocalProducts()
                 ]);
 
-                console.log('Datos cargados:', {apiProducts, localProducts});
+                console.log('Datos cargados:', { apiProducts, localProducts });
 
                 setProducts(apiProducts);
                 setLocalProducts(localProducts);
@@ -100,11 +100,7 @@ export default function ProductListingScreen({ navigation }) {
         return ["default", ...uniqueCategories];
     };
 
-    const handleSignOut = () => {
-        auth.signOut()
-            .then(() => navigation.replace("Login"))
-            .catch(error => alert(error.message));
-    };
+    
 
     const renderCategoryItem = ({ item }) => (
         <TouchableOpacity
@@ -122,10 +118,6 @@ export default function ProductListingScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.mainContainer}>
-            <TouchableOpacity style={styles.btnLogOut} onPress={handleSignOut}>
-                <Text style={styles.buttonText}>Log Out</Text>
-            </TouchableOpacity>
-
             <Text style={styles.label}>Buscar por categoría:</Text>
             <View style={styles.pickerContainer}>
                 <TouchableOpacity
@@ -209,13 +201,13 @@ export default function ProductListingScreen({ navigation }) {
 const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
-        backgroundColor: '#E6E6D1',
+        backgroundColor: '#E6E6D1'
     },
     label: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: "600",
-        marginHorizontal: 16,
-        marginTop: 16,
+        marginHorizontal: 20,
+        marginTop: 40,
         color: '#333',
     },
     pickerContainer: {
@@ -228,6 +220,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#DDD',
         padding: 12,
+        marginTop: 5
     },
     pickerText: {
         fontSize: 16,
@@ -292,7 +285,7 @@ const styles = StyleSheet.create({
     price: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#2ecc71',
+        color: '#007bff',
     },
     categoryBadge: {
         position: 'absolute',
@@ -308,7 +301,7 @@ const styles = StyleSheet.create({
     },
     columnWrapper: {
         justifyContent: "space-between",
-        paddingHorizontal: 8,
+        paddingHorizontal: 14,
     },
     productList: {
         paddingTop: 16,
@@ -325,14 +318,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 20,
         fontSize: 16,
-    },
-    btnLogOut: {
-        margin: 10,
-        alignSelf: 'flex-end',
-    },
-    buttonText: {
-        fontSize: 16,
-        color: "red",
-        fontWeight: '600',
     },
 });

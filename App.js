@@ -24,19 +24,14 @@ function HomeStack() {
                 name="HomeMain"
                 component={HomeScreen}
                 options={{
-                    title: 'Productos',
-                    headerStyle: { backgroundColor: '#007bff' },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: { fontWeight: 'bold' }
+                    headerShown: false
                 }}
             />
             <Stack.Screen
                 name="ProductDetail"
                 component={DetailsScreen}
                 options={{
-                    title: 'Detalle del Producto',
-                    headerStyle: { backgroundColor: '#007bff' },
-                    headerTintColor: '#fff'
+                    headerShown: false
                 }}
             />
         </Stack.Navigator>
@@ -52,8 +47,8 @@ function MyProductsStack() {
                 component={MyProductsScreen}
                 options={{
                     title: 'Mis Productos',
-                    headerStyle: { backgroundColor: '#007bff' },
-                    headerTintColor: '#fff',
+                    headerStyle: { backgroundColor: 'white' },
+                    headerTintColor: 'black',
                     headerTitleStyle: { fontWeight: 'bold' }
                 }}
             />
@@ -62,17 +57,17 @@ function MyProductsStack() {
                 component={MyProductsDetailScreen}
                 options={{
                     title: 'Detalle',
-                    headerStyle: { backgroundColor: '#007bff' },
-                    headerTintColor: '#fff'
+                    headerStyle: { backgroundColor: 'white' },
+                    headerTintColor: 'black'
                 }}
             />
             <Stack.Screen
                 name="Form"
                 component={FormScreen}
                 options={{
-                    title: 'Producto',
-                    headerStyle: { backgroundColor: '#007bff' },
-                    headerTintColor: '#fff'
+                    title: 'Agregar Producto',
+                    headerStyle: { backgroundColor: 'white' },
+                    headerTintColor: 'black'
                 }}
             />
         </Stack.Navigator>
@@ -103,7 +98,7 @@ function MainTabs() {
                     backgroundColor: '#fff',
                     borderTopWidth: 1,
                     borderTopColor: '#eee',
-                    height: 85,
+                    height: 75,
                     paddingBottom: 8,
                     paddingTop: 8,
                 },
@@ -132,12 +127,7 @@ function MainTabs() {
                 name="Carrito"
                 component={CarritoScreen}
                 options={{
-                    tabBarLabel: 'Carrito',
-                    headerShown: true,
-                    headerStyle: { backgroundColor: '#007bff' },
-                    headerTintColor: '#fff',
-                    headerTitleStyle: { fontWeight: 'bold' },
-                    title: 'Mi Carrito'
+                    headerShown: false
                 }}
             />
         </Tab.Navigator>

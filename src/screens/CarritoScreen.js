@@ -383,12 +383,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         padding: 20,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: '#eee'
     },
     headerTitle: {
         fontSize: 24,
         fontWeight: 'bold',
         color: '#333',
+        marginTop: 20
     },
     itemCount: {
         fontSize: 16,

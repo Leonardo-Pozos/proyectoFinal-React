@@ -1,17 +1,5 @@
 import React, { useState } from 'react';
-import {
-    View,
-    TextInput,
-    StyleSheet,
-    Alert,
-    Modal,
-    TouchableOpacity,
-    Text,
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView
-} from "react-native";
+import { View, TextInput, StyleSheet, Alert, Modal, TouchableOpacity, Text, FlatList, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { doc, updateDoc, addDoc, collection } from 'firebase/firestore';
 import { db, auth } from '../db/firebase';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,6 +25,11 @@ export default function FormScreen({ navigation, route }) {
     const [modalVisible, setModalVisible] = useState(false);
 
     const guardarProducto = async () => {
+        // Validación de campos vacíos
+        if (!title.trim() || !price.trim() || !image.trim() || !description.trim() || !count.trim()) {
+            Alert.alert('Campos obligatorios', 'Por favor, completa todos los campos.');
+            return;
+        }
         try {
             const productData = {
                 title: title,
@@ -174,7 +167,7 @@ export default function FormScreen({ navigation, route }) {
                     onPress={guardarProducto}
                 >
                     <Text style={styles.saveButtonText}>
-                        {productoExistente ? "GUARDAR CAMBIOS" : "CREAR PRODUCTO"}
+                        {productoExistente ? "GUARDAR CAMBIOS" : "AGREGAR PRODUCTO"}
                     </Text>
                 </TouchableOpacity>
             </ScrollView>

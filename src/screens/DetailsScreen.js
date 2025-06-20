@@ -209,21 +209,23 @@ const styles = StyleSheet.create({
     image: {
         width: '100%',
         height: 300,
+        marginTop: 20,
         marginBottom: 20,
         borderRadius: 12,
-        backgroundColor: '#f0f0f0',
+        backgroundColor: 'white',
+        borderRadius: 30
     },
     title: {
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 8,
-        color: '#333',
+        color: '#333'
     },
     price: {
         fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 16,
-        color: '#2ecc71',
+        color: '#007bff',
     },
     sectionTitle: {
         fontSize: 18,
@@ -260,12 +262,12 @@ const styles = StyleSheet.create({
         gap: 15,
     },
     buttonComprar: {
-        backgroundColor: '#e74c3c',
+        backgroundColor: '#007bff',
         paddingVertical: 15,
         borderRadius: 8,
         alignItems: 'center',
         flex: 1,
-        elevation: 3,
+        elevation: 3
     },
     button: {
         paddingVertical: 15,
