@@ -32,29 +32,39 @@ export default function MyProductsDetailScreen({ route }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 16,
-        gap: 10,
-        backgroundColor: '#fff',
-    },
-    image: {
-        width: '100%',
-        height: 200,
-        borderRadius: 8,
-        marginBottom: 12,
-    },
-    title: {
-        fontSize: 26,
-        fontWeight: 'bold',
-        marginBottom: 8,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginTop: 10,
-    },
-    text: {
-        fontSize: 15,
-        color: '#444',
-    },
+  container: {
+    padding: 20,
+    backgroundColor: '#f9f9f9',
+    flexGrow: 1,
+  },
+  image: {
+    width: '100%',
+    height: 250,
+    borderRadius: 12,
+    marginBottom: 20,
+    resizeMode: 'cover',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#2a2a2a',
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#555',
+    marginTop: 14,
+    marginBottom: 4,
+  },
+  text: {
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
+    backgroundColor: '#ffffff',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    elevation: 1,
+  },
 });

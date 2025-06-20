@@ -1,152 +1,322 @@
-import { FlatList, StyleSheet, Text, View, Image, ActivityIndicator, SafeAreaView, TouchableOpacity } from "react-native";
+import { FlatList, StyleSheet, Text, View, Image, ActivityIndicator, SafeAreaView, TouchableOpacity, Modal } from "react-native";
 import React, { useEffect, useState } from "react";
-import { Picker } from '@react-native-picker/picker';
-import { auth } from "../db/firebase";
+import { auth, db } from "../db/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function ProductListingScreen({ navigation }) {
     const [products, setProducts] = useState([]);
-    const [allProducts, setAllProducts] = useState([]);
+    const [localProducts, setLocalProducts] = useState([]);
+    const [combinedProducts, setCombinedProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedValue, setSelectedValue] = useState("default");
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
-        getProducts();
+        const loadData = async () => {
+            try {
+                console.log('Iniciando carga de datos...');
+                const [apiProducts, localProducts] = await Promise.all([
+                    getProducts(),
+                    getLocalProducts()
+                ]);
+
+                console.log('Datos cargados:', { apiProducts, localProducts });
+
+                setProducts(apiProducts);
+                setLocalProducts(localProducts);
+                setCategories(updateUniqueCategories(apiProducts, localProducts));
+                setIsLoading(false);
+
+            } catch (err) {
+                console.error('Error en loadData:', err);
+                setError(err.message);
+                setIsLoading(false);
+            }
+        };
+
+        loadData();
     }, []);
 
     useEffect(() => {
         if (selectedValue === "default") {
-            setProducts(allProducts);
+            setCombinedProducts([...localProducts, ...products]);
         } else {
-            const filtered = allProducts.filter(item => item.category === selectedValue);
-            setProducts(filtered);
+            const filteredApi = products.filter(item => item.category === selectedValue);
+            const filteredLocal = localProducts.filter(item => item.category === selectedValue);
+            setCombinedProducts([...filteredLocal, ...filteredApi]);
         }
-    }, [selectedValue]);
+    }, [selectedValue, products, localProducts]);
 
-    const getProducts = () => {
-        const URL = "https://fakestoreapi.com/products";
+    const getProducts = async () => {
+        try {
+            const URL = "https://fakestoreapi.com/products";
+            const response = await fetch(URL);
+            if (!response.ok) throw new Error("Error en la conexión a la API");
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error('Error fetching API products:', error);
+            throw error;
+        }
+    };
 
-        fetch(URL)
-            .then((res) => {
-                if (!res.ok) {
-                    throw new Error("Algo malo ha pasado en la conexión.");
-                }
-                return res.json();
-            })
-            .then((data) => {
-                setAllProducts(data);
-                setProducts(data);
-                setIsLoading(false);
-            })
-            .catch((error) => {
-                setError(error.message);
-                setIsLoading(false);
+    const getLocalProducts = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(db, 'db-productos'));
+            const productsData = querySnapshot.docs.map(doc => {
+                const productData = doc.data();
+                return {
+                    id: doc.id,
+                    ...productData,
+                    isLocal: true
+                };
             });
+            return productsData;
+        } catch (error) {
+            console.error('Error fetching local products:', error);
+            throw error;
+        }
     };
 
-    const handleSignOut = () => {
-        auth
-            .signOut()
-            .then(() => {
-                navigation.replace("Login");
-            })
-            .catch(error => alert(error.message))
+    const updateUniqueCategories = (apiProducts = [], localProducts = []) => {
+
+
+        const apiCategories = apiProducts
+            .filter(product => product?.category)
+            .map(product => product.category);
+
+        const localCategories = localProducts
+            .filter(product => product?.category)
+            .map(product => product.category);
+
+
+
+        const allCategories = [...apiCategories, ...localCategories];
+        const uniqueCategories = [...new Set(allCategories)].sort();
+
+
+        return ["default", ...uniqueCategories];
     };
+
+    
+
+    const renderCategoryItem = ({ item }) => (
+        <TouchableOpacity
+            style={styles.modalItem}
+            onPress={() => {
+                setSelectedValue(item);
+                setModalVisible(false);
+            }}
+        >
+            <Text style={styles.categoryText}>
+                {item === "default" ? "Todas las categorías" : item}
+            </Text>
+        </TouchableOpacity>
+    );
 
     return (
         <SafeAreaView style={styles.mainContainer}>
-            <TouchableOpacity style={styles.btnLogOut} onPress={handleSignOut}>
-                <Text style={styles.buttonText}>Sing Out</Text>
-            </TouchableOpacity>
             <Text style={styles.label}>Buscar por categoría:</Text>
             <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={selectedValue}
-                    onValueChange={(itemValue) => setSelectedValue(itemValue)}
-                    dropdownIconColor="#333">
-                    <Picker.Item label="------" value="default" />
-                    <Picker.Item label="Men's clothing" value="men's clothing" />
-                    <Picker.Item label="Jewelery" value="jewelery" />
-                    <Picker.Item label="Electronics" value="electronics" />
-                    <Picker.Item label="Women's clothing" value="women's clothing" />
-                </Picker>
+                <TouchableOpacity
+                    style={styles.pickerButton}
+                    onPress={() => setModalVisible(true)}
+                >
+                    <Text style={styles.pickerText}>
+                        {selectedValue === "default" ? "Selecciona una categoría" : selectedValue}
+                    </Text>
+                </TouchableOpacity>
+
+                <Modal
+                    transparent={true}
+                    visible={modalVisible}
+                    animationType="slide"
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPress={() => setModalVisible(false)}
+                    >
+                        <View style={styles.modalContent}>
+                            <FlatList
+                                data={categories}
+                                renderItem={renderCategoryItem}
+                                keyExtractor={(item) => item}
+                                contentContainerStyle={styles.categoryList}
+                                ListHeaderComponent={
+                                    <Text style={styles.modalTitle}>Selecciona categoría</Text>
+                                }
+                            />
+                        </View>
+                    </TouchableOpacity>
+                </Modal>
             </View>
 
-            {
-                isLoading ? (
-                    <ActivityIndicator color="red" size="large" />
-                ) : error ? (
-                    <Text>{error}</Text>
-                ) : (
-                    <FlatList
-                        numColumns={2}
-                        data={products}
-                        keyExtractor={(item) => item.id.toString()}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { productItem: item })}>
-                                <View style={styles.cardContainer}>
-                                    <Image source={{ uri: item.image }} style={styles.image} />
-                                    <Text style={styles.cardTitle}>{item.title}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        )}
-                        columnWrapperStyle={{ justifyContent: "space-between" }}
-                        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16 }}
-                    />
-                )
-            }
+            {isLoading ? (
+                <ActivityIndicator size="large" color="#007bff" />
+            ) : error ? (
+                <Text style={styles.errorText}>{error}</Text>
+            ) : (
+                <FlatList
+                    numColumns={2}
+                    data={combinedProducts}
+                    keyExtractor={(item) => item.isLocal ? `local_${item.id}` : `api_${item.id}`}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('ProductDetail', { productItem: item, userId: item.userId })}
+                        >
+                            <View style={styles.cardContainer}>
+                                <Image
+                                    source={{ uri: item.image }}
+                                    style={styles.image}
+                                    defaultSource={require('../../assets/placeholder.png')}
+                                />
+                                <Text style={styles.cardTitle} numberOfLines={2} ellipsizeMode="tail">
+                                    {item.title}
+                                    {item.isLocal && " ★"}
+                                </Text>
+                                <Text style={styles.price}>${item.price}</Text>
+                                {item.category && (
+                                    <Text style={styles.categoryBadge}>
+                                        {item.category}
+                                    </Text>
+                                )}
+                            </View>
+                        </TouchableOpacity>
+                    )}
+                    columnWrapperStyle={styles.columnWrapper}
+                    contentContainerStyle={styles.productList}
+                    ListEmptyComponent={
+                        <Text style={styles.emptyText}>No hay productos en esta categoría</Text>
+                    }
+                />
+            )}
         </SafeAreaView>
     );
-};
-
+}
 
 const styles = StyleSheet.create({
     mainContainer: {
-        flex: 1
+        flex: 1,
+        backgroundColor: '#E6E6D1'
     },
     label: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: "600",
-        marginHorizontal: 16,
-        marginTop: 16,
+        marginHorizontal: 20,
+        marginTop: 40,
+        color: '#333',
     },
     pickerContainer: {
         marginHorizontal: 16,
         marginVertical: 8,
+    },
+    pickerButton: {
         backgroundColor: "#FFF",
         borderRadius: 10,
         borderWidth: 1,
         borderColor: '#DDD',
+        padding: 12,
+        marginTop: 5
+    },
+    pickerText: {
+        fontSize: 16,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: '50%',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        padding: 16,
+        textAlign: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    categoryList: {
+        paddingBottom: 20,
+    },
+    modalItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    categoryText: {
+        fontSize: 16,
     },
     cardContainer: {
         backgroundColor: "#FFF",
         borderRadius: 12,
-        shadowOffset: { width: 0, height: 3 },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
-        elevation: 4,
+        elevation: 3,
         height: 260,
         width: 170,
         padding: 10,
-        margin: 7
+        margin: 7,
+        position: 'relative',
     },
     image: {
         height: 130,
         width: "100%",
         resizeMode: "contain",
         marginBottom: 10,
+        borderRadius: 8,
     },
     cardTitle: {
         fontSize: 14,
-        fontWeight: "600"
+        fontWeight: "600",
+        height: 40,
+        marginBottom: 4,
     },
-    errorStyle: {
+    price: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#007bff',
+    },
+    categoryBadge: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        color: 'white',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 10,
+        fontSize: 12,
+        overflow: 'hidden',
+    },
+    columnWrapper: {
+        justifyContent: "space-between",
+        paddingHorizontal: 14,
+    },
+    productList: {
+        paddingTop: 16,
+        paddingBottom: 20,
+    },
+    emptyText: {
+        textAlign: 'center',
+        marginTop: 20,
+        fontSize: 16,
+        color: '#666',
+    },
+    errorText: {
         color: "red",
-        fontSize: 18,
-        marginTop: 30,
-        textAlign: "center",
+        textAlign: 'center',
+        marginTop: 20,
+        fontSize: 16,
     },
-    btnLogOut:{
-        margin: 10
-    }
 });
